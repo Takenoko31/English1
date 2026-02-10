@@ -1,7 +1,11 @@
 const contentData = [
   {
     id: "a16z",
-    label: "a16z (sample)",
+    label: "a16z Podcast (sample)",
+    mediaType: "spotify",
+    mediaEmbedUrl: "https://open.spotify.com/embed/episode/7makk4oTQel546B0PZlDM5",
+    mediaPageUrl: "https://open.spotify.com/episode/7makk4oTQel546B0PZlDM5",
+    transcriptSourceUrl: "https://a16z.com/podcasts/",
     audio: "",
     sentences: [
       "Great founders are excellent at rapid learning loops.",
@@ -11,7 +15,11 @@ const contentData = [
   },
   {
     id: "yc",
-    label: "Y Combinator (sample)",
+    label: "Y Combinator Video (sample)",
+    mediaType: "youtube",
+    mediaEmbedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    mediaPageUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    transcriptSourceUrl: "https://www.ycombinator.com/library",
     audio: "",
     sentences: [
       "Make something people want, then talk to users every week.",
@@ -21,7 +29,11 @@ const contentData = [
   },
   {
     id: "venture-deals",
-    label: "Venture Deals (sample)",
+    label: "Venture Deals Podcast (sample)",
+    mediaType: "spotify",
+    mediaEmbedUrl: "https://open.spotify.com/embed/show/5CfCWKI5pZ28U0uOzXkDHe",
+    mediaPageUrl: "https://open.spotify.com/show/5CfCWKI5pZ28U0uOzXkDHe",
+    transcriptSourceUrl: "https://www.kauffmanfellows.org/journal",
     audio: "",
     sentences: [
       "A term sheet is a roadmap for the financing round.",
@@ -32,6 +44,10 @@ const contentData = [
   {
     id: "think-fast-talk-smart",
     label: "Think Fast Talk Smart (sample)",
+    mediaType: "spotify",
+    mediaEmbedUrl: "https://open.spotify.com/embed/show/6ll0mwL2Y0kVYV8Yl7v4Sk",
+    mediaPageUrl: "https://open.spotify.com/show/6ll0mwL2Y0kVYV8Yl7v4Sk",
+    transcriptSourceUrl: "https://fastersmarter.io/episodes/",
     audio: "",
     sentences: [
       "Clear communication starts with audience awareness.",
@@ -53,10 +69,14 @@ const savedKey = "savedExpressionsV1";
 const el = {
   contentSelect: document.querySelector("#contentSelect"),
   sentenceSelect: document.querySelector("#sentenceSelect"),
+  mediaStatus: document.querySelector("#mediaStatus"),
   audioPlayer: document.querySelector("#audioPlayer"),
+  mediaEmbed: document.querySelector("#mediaEmbed"),
   scriptText: document.querySelector("#scriptText"),
   speakBtn: document.querySelector("#speakBtn"),
   slowSpeakBtn: document.querySelector("#slowSpeakBtn"),
+  fetchScriptBtn: document.querySelector("#fetchScriptBtn"),
+  scriptSourceLink: document.querySelector("#scriptSourceLink"),
   lookupSelectionBtn: document.querySelector("#lookupSelectionBtn"),
   saveSelectionBtn: document.querySelector("#saveSelectionBtn"),
   dictationInput: document.querySelector("#dictationInput"),
@@ -74,8 +94,12 @@ const el = {
   quizArea: document.querySelector("#quizArea")
 };
 
+function getCurrentContent() {
+  return contentData[state.contentIdx];
+}
+
 function getCurrentSentence() {
-  return contentData[state.contentIdx].sentences[state.sentenceIdx];
+  return getCurrentContent().sentences[state.sentenceIdx];
 }
 
 function loadSavedExpressions() {
@@ -156,14 +180,57 @@ function scoreDictation(input, answer) {
   };
 }
 
+function setMediaStatus(message) {
+  el.mediaStatus.textContent = message;
+}
+
+function updateMediaView() {
+  const current = getCurrentContent();
+  const hasAudio = Boolean(current.audio);
+  const hasEmbed = Boolean(current.mediaEmbedUrl);
+
+  if (hasAudio) {
+    el.audioPlayer.src = current.audio;
+    el.audioPlayer.style.display = "block";
+  } else {
+    el.audioPlayer.removeAttribute("src");
+    el.audioPlayer.load();
+    el.audioPlayer.style.display = "none";
+  }
+
+  if (hasEmbed) {
+    el.mediaEmbed.src = current.mediaEmbedUrl;
+    el.mediaEmbed.style.display = "block";
+  } else {
+    el.mediaEmbed.removeAttribute("src");
+    el.mediaEmbed.style.display = "none";
+  }
+
+  if (current.transcriptSourceUrl) {
+    el.scriptSourceLink.href = current.transcriptSourceUrl;
+    el.scriptSourceLink.style.display = "inline-flex";
+  } else {
+    el.scriptSourceLink.removeAttribute("href");
+    el.scriptSourceLink.style.display = "none";
+  }
+
+  if (hasAudio && hasEmbed) {
+    setMediaStatus("音声URLと埋め込みの両方が設定されています。必要な方を使ってください。");
+  } else if (hasAudio) {
+    setMediaStatus("音声URLから再生します。読み込めない場合は埋め込みURLを設定してください。");
+  } else if (hasEmbed) {
+    setMediaStatus("Spotify / YouTube の埋め込みを表示中です。");
+  } else {
+    setMediaStatus("音声が未設定です。教材データに mediaEmbedUrl または audio を設定してください。");
+  }
+}
+
 function updateSentenceView() {
   const sentence = getCurrentSentence();
   el.scriptText.textContent = sentence;
   el.dictationInput.value = "";
   el.dictationResult.textContent = "";
-
-  const current = contentData[state.contentIdx];
-  el.audioPlayer.src = current.audio || "";
+  updateMediaView();
 }
 
 function renderContentOptions() {
@@ -178,7 +245,7 @@ function renderContentOptions() {
 
 function renderSentenceOptions() {
   el.sentenceSelect.innerHTML = "";
-  contentData[state.contentIdx].sentences.forEach((sentence, idx) => {
+  getCurrentContent().sentences.forEach((sentence, idx) => {
     const opt = document.createElement("option");
     opt.value = String(idx);
     opt.textContent = `${idx + 1}. ${sentence.slice(0, 60)}`;
@@ -242,6 +309,38 @@ function speakCurrentSentence(rate = 1) {
   window.speechSynthesis.speak(utter);
 }
 
+async function fetchOfficialScript() {
+  const current = getCurrentContent();
+  if (!current.transcriptSourceUrl) {
+    alert("この教材はスクリプト出典URLが未設定です。");
+    return;
+  }
+
+  el.fetchScriptBtn.disabled = true;
+  setMediaStatus("公式スクリプトを取得中...");
+
+  try {
+    const proxiedUrl = `https://r.jina.ai/http://${current.transcriptSourceUrl.replace(/^https?:\/\//, "")}`;
+    const res = await fetch(proxiedUrl);
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const text = await res.text();
+    if (!text.trim()) {
+      throw new Error("empty response");
+    }
+
+    const cleaned = text.replace(/\n{3,}/g, "\n\n").slice(0, 6000);
+    el.scriptText.textContent = cleaned;
+    setMediaStatus("公式サイト由来のテキストを読み込みました（取得できる範囲）。");
+  } catch {
+    setMediaStatus("自動取得に失敗しました。出典リンクを開いて手動で確認してください。");
+  } finally {
+    el.fetchScriptBtn.disabled = false;
+  }
+}
+
 function createQuizQuestion() {
   const items = loadSavedExpressions();
   if (!items.length) {
@@ -277,6 +376,7 @@ el.sentenceSelect.addEventListener("change", (e) => {
 
 el.speakBtn.addEventListener("click", () => speakCurrentSentence(1));
 el.slowSpeakBtn.addEventListener("click", () => speakCurrentSentence(0.7));
+el.fetchScriptBtn.addEventListener("click", () => fetchOfficialScript());
 
 el.lookupSelectionBtn.addEventListener("click", () => {
   const selection = getSelectionText();
