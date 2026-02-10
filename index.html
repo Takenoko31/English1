@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>English Content Trainer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Dictation + Reading Trainer</h1>
+      <p>対象: a16z / YC / Venture Deals / Think Fast Talk Smart</p>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>1) コンテンツ選択</h2>
+        <div class="row">
+          <label for="contentSelect">教材</label>
+          <select id="contentSelect"></select>
+        </div>
+        <div class="row">
+          <label for="sentenceSelect">文</label>
+          <select id="sentenceSelect"></select>
+        </div>
+      </section>
+
+      <section class="grid two-col">
+        <article class="panel">
+          <h2>2) リスニング + スクリプト（1画面）</h2>
+          <audio id="audioPlayer" controls preload="none"></audio>
+          <div class="row">
+            <button id="speakBtn" type="button">音声読み上げ（代替）</button>
+            <button id="slowSpeakBtn" type="button">ゆっくり再生</button>
+          </div>
+          <div id="scriptText" class="script" tabindex="0"></div>
+          <small>※ テキストを選択して「選択語句を調べる」を押すと辞書検索できます。</small>
+          <div class="row">
+            <button id="lookupSelectionBtn" type="button">選択語句を調べる</button>
+            <button id="saveSelectionBtn" type="button">選択語句を保存</button>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>3) ディクテーション</h2>
+          <p id="dictationPrompt">聞こえた文を書き取ってください。</p>
+          <textarea id="dictationInput" rows="5" placeholder="ここに入力"></textarea>
+          <div class="row">
+            <button id="checkDictationBtn" type="button">採点</button>
+            <button id="showAnswerBtn" type="button">正解表示</button>
+          </div>
+          <div id="dictationResult" class="result"></div>
+        </article>
+      </section>
+
+      <section class="grid two-col">
+        <article class="panel">
+          <h2>4) 単語・表現の確認（英和 / 英英）</h2>
+          <div class="row">
+            <input id="lookupInput" type="text" placeholder="調べたい単語やフレーズ" />
+            <button id="lookupBtn" type="button">検索</button>
+          </div>
+          <div id="lookupResult" class="lookup"></div>
+        </article>
+
+        <article class="panel">
+          <h2>5) 保存表現</h2>
+          <ul id="savedList"></ul>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>6) 保存表現テスト</h2>
+        <div class="row">
+          <button id="startQuizBtn" type="button">テスト開始</button>
+          <button id="nextQuizBtn" type="button">次の問題</button>
+          <button id="showQuizAnswerBtn" type="button">答えを見る</button>
+        </div>
+        <div id="quizArea" class="quiz"></div>
+      </section>
+    </main>
+
+    <template id="savedItemTemplate">
+      <li>
+        <span class="saved-expression"></span>
+        <button class="delete-saved" type="button">削除</button>
+      </li>
+    </template>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>
