@@ -80,12 +80,43 @@ textarea,
   width: 100%;
 }
 
+.media-status {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  background: #f8faff;
+  color: var(--muted);
+}
+
+#audioPlayer {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.media-embed {
+  width: 100%;
+  min-height: 280px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+#scriptSourceLink {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .script {
   min-height: 110px;
   border: 1px dashed var(--border);
   padding: 0.75rem;
   border-radius: 8px;
   background: #fbfcff;
+  white-space: pre-wrap;
 }
 
 .result,

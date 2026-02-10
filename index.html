@@ -28,10 +28,21 @@
       <section class="grid two-col">
         <article class="panel">
           <h2>2) リスニング + スクリプト（1画面）</h2>
+          <div id="mediaStatus" class="media-status"></div>
           <audio id="audioPlayer" controls preload="none"></audio>
+          <iframe
+            id="mediaEmbed"
+            class="media-embed"
+            title="Embedded media player"
+            loading="lazy"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
           <div class="row">
             <button id="speakBtn" type="button">音声読み上げ（代替）</button>
             <button id="slowSpeakBtn" type="button">ゆっくり再生</button>
+            <button id="fetchScriptBtn" type="button">公式スクリプト取得</button>
+            <a id="scriptSourceLink" href="#" target="_blank" rel="noopener noreferrer">スクリプト出典を開く</a>
           </div>
           <div id="scriptText" class="script" tabindex="0"></div>
           <small>※ テキストを選択して「選択語句を調べる」を押すと辞書検索できます。</small>
